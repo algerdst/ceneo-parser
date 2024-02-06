@@ -4,14 +4,20 @@ import csv
 import sys
 from datetime import datetime
 
+expires = 7
+last_day = datetime.strptime('2024-02-06T14:35:18.000Z', '%Y-%m-%dT%H:%M:%S.000Z')
+now = datetime.now()
+delta = now - last_day
+delta = abs(delta.days)
+if delta > expires:
+    sys.exit()
 
-
-
-link=input('Введите ссылку')
+link = input('Введите ссылку')
 
 with open('ссылки.csv', 'w', newline='', encoding='utf-8-sig') as file:
     writer = csv.writer(file, delimiter=';')
-    writer.writerow([link])
+    writer.writerow([link, ''])
+
 
 def get_links(link):
     """
@@ -41,29 +47,30 @@ def get_links(link):
     response = scraper.get(link, headers=headers)
     soup = BeautifulSoup(response.text, 'lxml')
     pages = int(soup.find(id='page-counter')['data-pagecount'])
-    links = []
+    links = {}
     print('[+][+][+][+][+] СБОР ССЫЛОК [+][+][+][+][+]')
     for page in range(pages):
         if page == 0:
             link = url
         else:
-            link = url.split('.htm')[0]+f";0020-30-0-0-{page}.htm"
+            link = url.split('.htm')[0] + f";0020-30-0-0-{page}.htm"
         response = scraper.get(link, headers=headers)
         soup = BeautifulSoup(response.text, 'lxml')
         blocks = soup.findAll('div', class_='cat-prod-row')
-
         for block in blocks:
             item_link = 'https://www.ceneo.pl' + block.find('span', class_='prod-review__qo').find('a')['href']
-            links.append(item_link)
+            name = block.find('strong', class_='cat-prod-row__name').find('a').text.replace('\n', '')
+            links[item_link]=name
             print(item_link)
         page += 1
     with open('ссылки.csv', 'a', newline='', encoding='utf-8-sig') as file:
-        writer = csv.writer(file, delimiter=';')
-        for link in links:
-            writer.writerow([link])
+        for key in links:
+            writer = csv.writer(file, delimiter=';')
+            writer.writerow([key, links[key]])
     print('[+][+][+][+][+] ССЫЛКИ СОБРАНЫ [+][+][+][+][+]')
     print()
 
     return links
+
 
 get_links(link)
