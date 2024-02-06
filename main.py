@@ -9,15 +9,6 @@ import sys
 from datetime import datetime
 
 
-expires = 7
-last_day = datetime.strptime('2024-02-06T14:35:18.000Z', '%Y-%m-%dT%H:%M:%S.000Z')
-now = datetime.now()
-delta = now - last_day
-delta = abs(delta.days)
-if delta > expires:
-    sys.exit()
-
-
 
 # записываем все ссылки из файла в список links
 with open("ссылки.csv", encoding='utf-8-sig') as r_file:
